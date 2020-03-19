@@ -6,7 +6,7 @@ ODIR = obj
 LDIR = lib
 
 _DEPS = image.h ray.h scene.h
-_DEPS += renderer.h object.h
+_DEPS += renderer.h object.h light.h
 _DEPS += glm/*.hpp stb/*.h
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
 

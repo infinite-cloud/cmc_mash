@@ -6,6 +6,8 @@
 
 #include "image.h"
 #include "scene.h"
+#include "object.h"
+#include "ray.h"
 
 class Renderer
 {
