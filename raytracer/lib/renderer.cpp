@@ -64,6 +64,14 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
     Ray reflection = Ray(reflection_origin, reflection_direction);
     glm::vec3 reflection_color = render_ray(scene, reflection, recursion + 1);
 
+    glm::vec3 refraction_direction = refract(ray.direction(), i->normal(),
+        i->material()->refractive_index());
+    glm::vec3 refraction_origin = i->point() +
+        ((glm::dot(refraction_direction, i->normal()) < 0) ?
+            -i->normal() : i->normal()) * 1e-3f;
+    Ray refraction = Ray(refraction_origin, refraction_direction);
+    glm::vec3 refraction_color = render_ray(scene, refraction, recursion + 1);
+
     float diffuse_light_intensity = 0;
     float specular_light_intensity = 0;
 
@@ -100,7 +108,8 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
         diffuse_light_intensity * i->material()->albedo().x +
         glm::vec3(1) * specular_light_intensity *
         i->material()->albedo().y +
-        reflection_color * i->material()->albedo().z;
+        reflection_color * i->material()->albedo().z +
+        refraction_color * i->material()->albedo().w;
 
     return color;
 }

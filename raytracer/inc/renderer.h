@@ -1,6 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <algorithm>
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -32,6 +34,30 @@ private:
     static glm::vec3 reflect(const glm::vec3 &indice, const glm::vec3 &normal)
     {
         return indice - 2.0f * normal * glm::dot(indice, normal); 
+    }
+    
+    static glm::vec3 refract(const glm::vec3 &indice, const glm::vec3 &normal,
+            float refracive_index)
+    {
+        float cos_i = -std::max(-1.0f, 
+            std::min(1.0f, glm::dot(indice, normal)));
+        float eta_i = 1;
+        float eta_t = refracive_index;
+
+        glm::vec3 n = normal;
+
+        if (cos_i < 0)
+        {
+            cos_i = -cos_i;
+            std::swap(eta_i, eta_t);
+            n = -n;
+        }
+
+        float eta = eta_i / eta_t;
+        float k = 1 - eta * eta * (1 - cos_i * cos_i);
+
+        return (k < 0) ? glm::vec3(0) :
+            indice * eta + n * (eta * cos_i - std::sqrt(k));
     }
 };
 
