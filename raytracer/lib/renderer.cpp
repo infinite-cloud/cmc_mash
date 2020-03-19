@@ -8,13 +8,6 @@
 #include "object.h"
 #include "ray.h"
 
-static glm::vec3 reflect(const glm::vec3 &indice, const glm::vec3 &normal)
-{
-    return indice - 2.0f * normal * glm::dot(indice, normal); 
-}
-
-const float fov = 3.141592 / 2.0;
-
 Image Renderer::render(const Scene &scene) const
 {
     return render_frag(scene, glm::uvec2(0, 0), _size);
@@ -42,16 +35,16 @@ glm::vec3 Renderer::render_pixel(const Scene &scene,
 {
     float x_i = (2.0f * (position.x + 0.5f) /
         static_cast<float>(_size.x) - 1.0f) *
-        std::tan(fov / 2.0f) * _size.x / _size.y;
+        std::tan(_fov / 2.0f) * _size.x / _size.y;
     float y_i = -(2.0f * (position.y + 0.5f) /
         static_cast<float>(_size.y) - 1.0f) *
-        std::tan(fov / 2.0f);
+        std::tan(_fov / 2.0f);
 
     glm::vec3 direction = glm::normalize(glm::vec3(x_i, y_i, -1));
 
     Ray ray(glm::vec3(0.0), direction);
 
-    return render_ray(scene, ray, 0);
+    return render_ray(scene, ray);
 }
 
 glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
@@ -63,6 +56,13 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
     {
         return glm::vec3(0.2, 0.7, 0.8);
     }
+
+    glm::vec3 reflection_direction = reflect(ray.direction(), i->normal());
+    glm::vec3 reflection_origin = i->point() +
+        ((glm::dot(reflection_direction, i->normal()) < 0) ?
+            -i->normal() : i->normal()) * 1e-3f;
+    Ray reflection = Ray(reflection_origin, reflection_direction);
+    glm::vec3 reflection_color = render_ray(scene, reflection, recursion + 1);
 
     float diffuse_light_intensity = 0;
     float specular_light_intensity = 0;
@@ -76,8 +76,7 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
         
         glm::vec3 shadow_origin = i->point() +
             ((glm::dot(light_direction, i->normal()) < 0) ?
-                -i->normal() :
-                i->normal()) * 1e-3f;
+                -i->normal() : i->normal()) * 1e-3f;
         
         std::optional<Intersection> intersection =
             scene.find_intersection(Ray(shadow_origin, light_direction));
@@ -99,7 +98,9 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
 
     glm::vec3 color = i->material()->diffuse_color() *
         diffuse_light_intensity * i->material()->albedo().x +
-        glm::vec3(1) * specular_light_intensity * i->material()->albedo().y;
+        glm::vec3(1) * specular_light_intensity *
+        i->material()->albedo().y +
+        reflection_color * i->material()->albedo().z;
 
     return color;
 }
