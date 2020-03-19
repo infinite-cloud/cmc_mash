@@ -12,7 +12,7 @@
 
 int main(int argc, char *argv[])
 {
-    Renderer test(glm::uvec2(1024, 768));
+    Renderer test(glm::uvec2(1024, 768), 5);
     Scene scene;
 
     auto mat_1 = std::make_shared<Material>(glm::vec3(0.4, 0.4, 0.3),
