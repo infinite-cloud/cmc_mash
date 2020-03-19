@@ -45,3 +45,24 @@ std::optional<Intersection> Sphere::find_intersection(const Ray &r) const
         material()
     );
 }
+
+std::optional<Intersection> Plane::find_intersection(const Ray &r) const
+{
+    float denominator = glm::dot(r.direction(), _normal);
+
+    if (std::abs(denominator) < 1e-3f)
+    {
+        return std::nullopt;
+    }
+
+    float d = glm::dot(_point, -_normal);
+    float t = -(d + glm::dot(r.origin(), _normal)) / denominator;
+
+    if (t < 0)
+    {
+        return std::nullopt;
+    }
+
+    return Intersection(r.origin() + t * r.direction(), _normal,
+        t, material());
+}

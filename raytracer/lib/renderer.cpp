@@ -81,11 +81,11 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
             o->position() - i->point());
         glm::vec3 light_direction = glm::normalize(
             o->position() - i->point());
-        
+
         glm::vec3 shadow_origin = i->point() +
             ((glm::dot(light_direction, i->normal()) < 0) ?
                 -i->normal() : i->normal()) * 1e-3f;
-        
+
         std::optional<Intersection> intersection =
             scene.find_intersection(Ray(shadow_origin, light_direction));
 

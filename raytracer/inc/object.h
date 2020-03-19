@@ -50,8 +50,21 @@ class Sphere : public Object
 
 public:
     Sphere(const glm::vec3 &center, float radius,
-        const std::shared_ptr<Material> &material) :
+            const std::shared_ptr<Material> &material) :
         Object(material), _center(center), _radius(radius) {}
+
+    std::optional<Intersection> find_intersection(const Ray &r) const;
+};
+
+class Plane : public Object
+{
+    glm::vec3 _normal;
+    glm::vec3 _point;
+
+public:
+    Plane(const glm::vec3 &normal, const glm::vec3 &point,
+            const std::shared_ptr<Material> &material) :
+        Object(material), _normal(normal), _point(point) {}
 
     std::optional<Intersection> find_intersection(const Ray &r) const;
 };
