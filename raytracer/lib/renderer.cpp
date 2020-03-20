@@ -18,6 +18,7 @@ Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
 {
     Image img(size);
 
+    #pragma omp parallel for schedule(dynamic, 1)
     for (size_t y = 0; y < _size.y; ++y)
     {
         for (size_t x = 0; x < _size.x; ++x)

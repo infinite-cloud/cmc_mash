@@ -1,6 +1,6 @@
 IDIR = inc
 CC = g++
-CFLAGS = -I$(IDIR) -Wall -std=c++17 -pthread -O3
+CFLAGS = -I$(IDIR) -Wall -std=c++17 -pthread -O3 -fopenmp
 
 ODIR = obj
 LDIR = lib
