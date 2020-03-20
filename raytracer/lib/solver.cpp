@@ -1,16 +1,15 @@
 #include <cmath>
 #include <algorithm>
-#include <limits>
 
 #include "solver.h"
 
-glm::vec2 Solver::solve_quadratic(float a, float b, float c)
+std::vector<float> Solver::solve_quadric(float a, float b, float c)
 {
     float d = b * b - 4.0f * a * c;
 
     if (d < 0.0f)
     {
-        return glm::vec2(std::numeric_limits<float>::quiet_NaN());
+        return std::vector<float>();
     }
 
     d = std::sqrt(d);
@@ -24,7 +23,7 @@ glm::vec2 Solver::solve_quadratic(float a, float b, float c)
         std::swap(t_0, t_1);
     }
 
-    return glm::vec2(t_0, t_1);
+    return std::vector<float> { t_0, t_1 };
 }
 
 float Solver::solve_cubic_normalized(float p, float q, float r)
@@ -53,7 +52,7 @@ float Solver::solve_cubic_normalized(float p, float q, float r)
     }
 }
 
-glm::vec4 Solver::solve_quartic(float a, float b, float c,
+std::vector<float> Solver::solve_quartic(float a, float b, float c,
     float d, float e)
 {
     float inv_a = 1.0f / a;
@@ -79,7 +78,7 @@ glm::vec4 Solver::solve_quartic(float a, float b, float c,
         }
         else
         {
-            return glm::vec4(std::numeric_limits<float>::quiet_NaN());
+            return std::vector<float>();
         }
     }
 
@@ -89,7 +88,7 @@ glm::vec4 Solver::solve_quartic(float a, float b, float c,
     {
         if ((d_2 = z * z - r) < 0.0f)
         {
-            return glm::vec4(std::numeric_limits<float>::quiet_NaN());
+            return std::vector<float>();
         }
 
         d_2 = std::sqrt(d_2);
@@ -105,39 +104,39 @@ glm::vec4 Solver::solve_quartic(float a, float b, float c,
     float p_m = q_1 - 4.0f * (z - d_2);
     float p_p = q_1 - 4.0f * (z + d_2);
     
-    glm::vec4 result;
+    std::vector<float> result;
     
     if (p_m >= 0.0f && p_p >= 0.0f)
     {
         p_m = std::sqrt(p_m);
         p_p = std::sqrt(p_p);
 
-        result[0] = -0.5f * (d_1 + p_m) + q_2;
-        result[1] = -0.5f * (d_1 - p_m) + q_2;
-        result[2] = 0.5f * (d_1 + p_m) + q_2;
-        result[3] = 0.5f * (d_1 - p_m) + q_2;
+        result.push_back(-0.5f * (d_1 + p_m) + q_2);
+        result.push_back(-0.5f * (d_1 - p_m) + q_2);
+        result.push_back(0.5f * (d_1 + p_m) + q_2);
+        result.push_back(0.5f * (d_1 - p_m) + q_2);
     }
     else if (p_m >= 0.0f)
     {
         p_m = std::sqrt(p_m);
 
-        result[0] = -0.5f * (d_1 + p_m) + q_2;
-        result[1] = result[0];
-        result[2] = -0.5f * (d_1 - p_m) + q_2;
-        result[3] = result[2];
+        result.push_back(-0.5f * (d_1 + p_m) + q_2);
+        result.push_back(result[0]);
+        result.push_back(-0.5f * (d_1 - p_m) + q_2);
+        result.push_back(result[2]);
     }
     else if (p_p >= 0.0f)
     {
         p_p = std::sqrt(p_p);
 
-        result[0] = 0.5f * (d_1 - p_p) + q_2;
-        result[1] = result[0];
-        result[2] = 0.5f * (d_1 + p_p) + q_2;
-        result[3] = result[2];
+        result.push_back(0.5f * (d_1 - p_p) + q_2);
+        result.push_back(result[0]);
+        result.push_back(0.5f * (d_1 + p_p) + q_2);
+        result.push_back(result[2]);
     }
     else
     {
-        return glm::vec4(std::numeric_limits<float>::quiet_NaN());
+        return std::vector<float>();
     }
 
     for (unsigned char i = 1; i < 4; ++i)
