@@ -37,6 +37,21 @@ int main(int argc, char *argv[])
     scene.objects().push_back(std::unique_ptr<Plane>(
         new Plane(glm::normalize(glm::vec3(0, 1, 0)),
         glm::vec3(0, -3.5, 0), ivory)));
+    
+    std::vector<Vertex> v;
+    std::vector<Triangle> t;
+    
+    v.push_back(Vertex { .position = glm::vec3(0, 0, -4),
+        .normal = glm::vec3(0, 0, 1) });
+    v.push_back(Vertex { .position = glm::vec3(2, 1, -4),
+        .normal = glm::vec3(0, 0, 1) });
+    v.push_back(Vertex { .position = glm::vec3(1, 2, -4),
+        .normal = glm::vec3(0, 0, 1) });
+    
+    t.push_back(Triangle { .a = 0, .b = 1, .c = 2 });
+    
+    scene.objects().push_back(std::unique_ptr<Mesh>(
+        new Mesh(v, t, glass)));
 
     scene.point_lights().push_back(std::unique_ptr<PointLight>(
         new PointLight(glm::vec3(-20, 20, 20), 1.5f)));

@@ -69,4 +69,33 @@ public:
     std::optional<Intersection> find_intersection(const Ray &r) const;
 };
 
+struct Vertex
+{
+    glm::vec3 position;
+    glm::vec3 normal;
+};
+
+struct Triangle
+{
+    unsigned a;
+    unsigned b;
+    unsigned c;
+};
+
+class Mesh : public Object
+{
+    std::vector<Vertex> _vertices;
+    std::vector<Triangle> _triangles;
+
+public:
+    Mesh(std::vector<Vertex> vertices, std::vector<Triangle> triangles,
+            const std::shared_ptr<Material> &material) :
+        Object(material), _vertices(std::move(vertices)),
+        _triangles(std::move(triangles)) {}
+
+    std::optional<Intersection> find_intersection(const Ray &r) const;
+    std::optional<Intersection> find_intersection(const Ray &r,
+        const Triangle &t) const;
+};
+
 #endif // OBJECT_H
