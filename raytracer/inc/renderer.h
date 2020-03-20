@@ -30,6 +30,8 @@ private:
         const glm::uvec2 &position) const;
     glm::vec3 render_ray(const Scene &scene, const Ray &ray,
         unsigned recursion = 0) const;
+    glm::vec3 render_path(const Scene &scene, const Ray &ray,
+        unsigned recursion, unsigned short xi[3]) const;
 
     glm::vec3 reflect(const glm::vec3 &indice, const glm::vec3 &normal)
         const;

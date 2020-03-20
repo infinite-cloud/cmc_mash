@@ -18,13 +18,17 @@ int main(int argc, char *argv[])
     Scene scene;
 
     auto ivory = std::make_shared<Material>(glm::vec3(0.4, 0.4, 0.3),
-        glm::vec4(0.6, 0.3, 0.1, 0.0), 50.0f, 1.0f);
+        glm::vec3(0.0), glm::vec4(0.6, 0.3, 0.1, 0.0), 50.0f, 1.0f,
+        Material::DIFFUSE);
     auto rubber = std::make_shared<Material>(glm::vec3(0.3, 0.1, 0.1),
-        glm::vec4(0.9, 0.1, 0.0, 0.0), 10.0f, 1.0f);
+        glm::vec3(0.0), glm::vec4(0.9, 0.1, 0.0, 0.0), 10.0f, 1.0f,
+        Material::DIFFUSE);
     auto mirror = std::make_shared<Material>(glm::vec3(1.0, 1.0, 1.0),
-        glm::vec4(0.0, 10.0, 0.8, 0.0), 1425.0f, 1.0f);
+        glm::vec3(0.0), glm::vec4(0.0, 10.0, 0.8, 0.0), 1425.0f, 1.0f,
+        Material::SPECULAR);
     auto glass = std::make_shared<Material>(glm::vec3(0.6, 0.7, 0.8),
-        glm::vec4(0.0, 0.5, 0.1, 0.8), 125.0f, 1.5f);
+        glm::vec3(0.0), glm::vec4(0.0, 0.5, 0.1, 0.8), 125.0f, 1.5f,
+        Material::REFRACTIVE);
 
     scene.objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::vec3(-3, 0, -16), 2.0f, ivory)));
