@@ -5,15 +5,15 @@
 
 class PointLight
 {
-    glm::vec3 _position;
-    float _intensity;
+    glm::dvec3 _position;
+    double _intensity;
 
 public:
-    PointLight(const glm::vec3 &position, float intensity) :
+    PointLight(const glm::dvec3 &position, double intensity) :
         _position(position), _intensity(intensity) {}
 
-    const glm::vec3 &position() const { return _position; }
-    float intensity() const { return _intensity; }
+    const glm::dvec3 &position() const { return _position; }
+    double intensity() const { return _intensity; }
 };
 
 #endif // LIGHT_H

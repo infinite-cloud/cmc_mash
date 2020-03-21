@@ -10,31 +10,25 @@
 #include "scene.h"
 #include "object.h"
 #include "ray.h"
+#include "options.h"
 
 class Renderer
 {
-    glm::uvec2 _size;
-    float _fov;
-    unsigned _max_recursion;
-
 public:
-    Renderer(const glm::uvec2 size, float fov, unsigned max_recursion) :
-        _size(size), _fov(fov), _max_recursion(max_recursion) {}
-
-    Image render(const Scene &scene) const;
+    Image render(const Scene &scene, const Options &options) const;
 
 private:
-    Image render_frag(const Scene &scene, const glm::uvec2 &start,
-        const glm::uvec2 &size) const;
-    glm::vec3 render_pixel(const Scene &scene,
-        const glm::uvec2 &position) const;
-    glm::vec3 render_ray(const Scene &scene, const Ray &ray,
-        unsigned recursion = 0) const;
+    glm::dvec3 render_pixel(const Scene &scene, const glm::uvec2 &position,
+        const Options &options, const glm::uvec2 &supersample) const;
+    glm::dvec3 render_ray(const Scene &scene, const Ray &ray,
+        unsigned recursion = 0, unsigned max_recursion = 5) const;
+    glm::dvec3 render_path(const Scene &scene, const Ray &ray,
+        unsigned recursion = 0, unsigned max_recursion = 5) const;
 
-    glm::vec3 reflect(const glm::vec3 &indice, const glm::vec3 &normal)
+    glm::dvec3 reflect(const glm::dvec3 &indice, const glm::dvec3 &normal)
         const;
-    glm::vec3 refract(const glm::vec3 &indice, const glm::vec3 &normal,
-        float refracive_index) const;
+    glm::dvec3 refract(const glm::dvec3 &indice, const glm::dvec3 &normal,
+        double refracive_index) const;
 };
 
 #endif // RENDERER_H

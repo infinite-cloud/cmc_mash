@@ -1,29 +1,58 @@
 #include <cmath>
 #include <optional>
 #include <algorithm>
+#include <random>
 
 #include <glm/gtx/norm.hpp>
+#include <glm/common.hpp>
 
 #include "renderer.h"
 #include "object.h"
 #include "ray.h"
 
-Image Renderer::render(const Scene &scene) const
+static std::default_random_engine generator;
+static std::uniform_real_distribution<double> distr(0.0, 1.0);
+
+static double erand48()
 {
-    return render_frag(scene, glm::uvec2(0, 0), _size);
+    return distr(generator);
 }
 
-Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
-        const glm::uvec2 &size) const
+Image Renderer::render(const Scene &scene, const Options &options) const
 {
-    Image img(size);
+    Image img(options.size);
+    glm::dvec3 color, r;
+    double passes = options.supersampling_level *
+        options.supersampling_level;
 
-    #pragma omp parallel for schedule(dynamic, 1)
-    for (size_t y = 0; y < _size.y; ++y)
+    auto f = [](double x) { return static_cast<int>((std::pow(
+        glm::clamp(x, 0.0d, 1.0d), 1.0d / 2.2d) * 255.0d + 0.5d)); };
+
+    #pragma omp parallel for schedule(dynamic, 1) private(color, r)
+    for (size_t y = 0; y < options.size.y; ++y)
     {
-        for (size_t x = 0; x < _size.x; ++x)
+        for (size_t x = 0; x < options.size.x; ++x)
         {
-            glm::vec3 color = render_pixel(scene, glm::uvec2(x, y));
+            color = glm::dvec3(0);
+
+            for (size_t s_y = 0; s_y < options.supersampling_level; ++s_y)
+            {
+                for (size_t s_x = 0; s_x < options.supersampling_level; ++s_x)
+                {
+                    r = render_pixel(scene, glm::uvec2(x, y),
+                        options, glm::uvec2(s_x, s_y));
+                    color += glm::dvec3(glm::clamp(r.x, 0.0d, 1.0d),
+                        glm::clamp(r.y, 0.0d, 1.0d),
+                        glm::clamp(r.z, 0.0d, 1.0d)) / passes;
+                }
+            }
+
+            if (options.paths_per_pixel > 0)
+            {
+                color = glm::dvec3(f(color.x), f(color.y), f(color.z)) /
+                    255.0d;
+            }
+
             img.set_pixel(glm::uvec2(x, y), color);
         }
     }
@@ -31,61 +60,100 @@ Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
     return img;
 }
 
-glm::vec3 Renderer::render_pixel(const Scene &scene,
-        const glm::uvec2 &position) const
+glm::dvec3 Renderer::render_pixel(const Scene &scene,
+        const glm::uvec2 &position, const Options &options,
+        const glm::uvec2 &supersample) const
 {
-    float x_i = (2.0f * (position.x + 0.5f) /
-        static_cast<float>(_size.x) - 1.0f) *
-        std::tan(_fov / 2.0f) * _size.x / _size.y;
-    float y_i = -(2.0f * (position.y + 0.5f) /
-        static_cast<float>(_size.y) - 1.0f) *
-        std::tan(_fov / 2.0f);
+    double fov_scale = 2.0d * std::tan(0.5d * options.fov);
 
-    glm::vec3 direction = glm::normalize(glm::vec3(x_i, y_i, -1));
+    glm::dvec3 c_x = glm::dvec3(options.size.x * fov_scale /
+        options.size.y, 0, 0);
+    glm::dvec3 c_y = -glm::normalize(glm::cross(c_x,
+        glm::dvec3(0, 0, -1))) * fov_scale;
 
-    Ray ray(glm::vec3(0.0), direction);
+    double x_i = (2.0d * (position.x + 0.5d) /
+        static_cast<double>(options.size.x) - 1.0d) *
+        std::tan(options.fov * 0.5d) *
+        options.size.x / options.size.y;
+    double y_i = -(2.0d * (position.y + 0.5d) /
+        static_cast<double>(options.size.y) - 1.0d) *
+        std::tan(options.fov * 0.5d);
 
-    return render_ray(scene, ray);
+    if (options.paths_per_pixel == 0)
+    {
+        glm::dvec3 direction = glm::normalize(glm::dvec3(x_i, y_i, -1));
+        Ray ray(glm::dvec3(0.0), direction);
+
+        return render_ray(scene, ray);
+    }
+    else
+    {
+        size_t samples = options.paths_per_pixel /
+            (options.supersampling_level * options.supersampling_level);
+        glm::dvec3 r = glm::dvec3(0);
+
+        for (size_t s = 0; s < samples; ++s)
+        {
+            double r_1 = 2 * erand48();
+            double d_x = (r_1 < 1) ? std::sqrt(r_1) - 1 :
+                1 - std::sqrt(2 - r_1);
+            double r_2 = 2 * erand48();
+            double d_y = (r_2 < 1) ? std::sqrt(r_2) - 1 :
+                1 - std::sqrt(2 - r_2);
+
+            glm::dvec3 d = c_x *
+                (((supersample.x + 0.5d + d_x) / 2 + position.x) /
+                options.size.x - 0.5d) +
+                c_y * (((supersample.y + 0.5d + d_y) / 2 + position.y) /
+                options.size.y - 0.5d) + glm::dvec3(0, 0, -1);
+
+            r += render_path(scene,
+                Ray(d, glm::normalize(d))) /
+                static_cast<double>(options.paths_per_pixel);
+        }
+
+        return r;
+    }
 }
 
-glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
-        unsigned recursion) const
+glm::dvec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
+        unsigned recursion, unsigned max_recursion) const
 {
     std::optional<Intersection> i = scene.find_intersection(ray);
 
-    if (recursion > _max_recursion || !i)
+    if (recursion > max_recursion || !i)
     {
-        return glm::vec3(0.2, 0.7, 0.8);
+        return glm::dvec3(0.2, 0.7, 0.8);
     }
 
-    glm::vec3 reflection_direction = reflect(ray.direction(), i->normal());
-    glm::vec3 reflection_origin = i->point() +
+    glm::dvec3 reflection_direction = reflect(ray.direction(), i->normal());
+    glm::dvec3 reflection_origin = i->point() +
         ((glm::dot(reflection_direction, i->normal()) < 0) ?
-            -i->normal() : i->normal()) * 1e-3f;
+            -i->normal() : i->normal()) * 1e-3d;
     Ray reflection = Ray(reflection_origin, reflection_direction);
-    glm::vec3 reflection_color = render_ray(scene, reflection, recursion + 1);
+    glm::dvec3 reflection_color = render_ray(scene, reflection, recursion + 1);
 
-    glm::vec3 refraction_direction = refract(ray.direction(), i->normal(),
+    glm::dvec3 refraction_direction = refract(ray.direction(), i->normal(),
         i->material()->refractive_index());
-    glm::vec3 refraction_origin = i->point() +
+    glm::dvec3 refraction_origin = i->point() +
         ((glm::dot(refraction_direction, i->normal()) < 0) ?
-            -i->normal() : i->normal()) * 1e-3f;
+            -i->normal() : i->normal()) * 1e-3d;
     Ray refraction = Ray(refraction_origin, refraction_direction);
-    glm::vec3 refraction_color = render_ray(scene, refraction, recursion + 1);
+    glm::dvec3 refraction_color = render_ray(scene, refraction, recursion + 1);
 
-    float diffuse_light_intensity = 0;
-    float specular_light_intensity = 0;
+    double diffuse_light_intensity = 0;
+    double specular_light_intensity = 0;
 
     for (const auto &o : scene.point_lights())
     {
-        float light_distance = glm::l2Norm(
+        double light_distance = glm::l2Norm(
             o->position() - i->point());
-        glm::vec3 light_direction = glm::normalize(
+        glm::dvec3 light_direction = glm::normalize(
             o->position() - i->point());
 
-        glm::vec3 shadow_origin = i->point() +
+        glm::dvec3 shadow_origin = i->point() +
             ((glm::dot(light_direction, i->normal()) < 0) ?
-                -i->normal() : i->normal()) * 1e-3f;
+                -i->normal() : i->normal()) * 1e-3d;
 
         std::optional<Intersection> intersection =
             scene.find_intersection(Ray(shadow_origin, light_direction));
@@ -97,17 +165,17 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
         }
 
         diffuse_light_intensity += o->intensity() *
-            std::max(0.0f, glm::dot(light_direction,
+            std::max(0.0d, glm::dot(light_direction,
             i->normal()));
         specular_light_intensity += std::pow(
-            std::max(0.0f, glm::dot(reflect(
+            std::max(0.0d, glm::dot(reflect(
             light_direction, i->normal()), ray.direction())),
             i->material()->specular_exponent()) * o->intensity();
     }
 
-    glm::vec3 color = i->material()->diffuse_color() *
+    glm::dvec3 color = i->material()->diffuse_color() *
         diffuse_light_intensity * i->material()->albedo().x +
-        glm::vec3(1) * specular_light_intensity *
+        glm::dvec3(1) * specular_light_intensity *
         i->material()->albedo().y +
         reflection_color * i->material()->albedo().z +
         refraction_color * i->material()->albedo().w;
@@ -115,20 +183,106 @@ glm::vec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
     return color;
 }
 
-glm::vec3 Renderer::reflect(const glm::vec3 &indice, const glm::vec3 &normal)
-    const
+glm::dvec3 Renderer::render_path(const Scene &scene, const Ray &ray,
+    unsigned recursion, unsigned max_recursion) const
 {
-    return indice - 2.0f * normal * glm::dot(indice, normal);
+    std::optional<Intersection> i = scene.find_intersection(ray);
+
+    if (!i)
+    {
+        return glm::dvec3(0.2, 0.7, 0.8);
+    }
+
+    glm::dvec3 color = i->material()->diffuse_color();
+    double p = std::max(color.x, std::max(color.y, color.z));
+
+    if (recursion > max_recursion)
+    {
+        if (erand48() < p)
+        {
+            color /= p;
+        }
+        else
+        {
+            return i->material()->emission();
+        }
+    }
+
+    glm::dvec3 n = (glm::dot(ray.direction(), i->normal()) < 0) ?
+        i->normal() : -i->normal();
+    Ray reflected = Ray(i->point(), reflect(ray.direction(), i->normal()));
+
+    if (i->material()->type() == Material::DIFFUSE)
+    {
+        double r_1 = 2 * std::acos(-1) * erand48();
+        double r_2 = erand48();
+        double r_2_s = std::sqrt(r_2);
+
+        glm::dvec3 u = glm::normalize(glm::cross(
+            ((std::abs(n.x) > 0.1d) ?
+            glm::dvec3(0, 1, 0) : glm::dvec3(1, 0, 0)), n));
+        glm::dvec3 v = glm::cross(n, u);
+        glm::dvec3 d = glm::normalize(
+            (u * std::cos(r_1) * r_2_s + v * std::sin(r_1) * r_2_s +
+            n * std::sqrt(1 - r_2)));
+
+        return i->material()->emission() + color *
+            render_path(scene, Ray(i->point(), d), recursion + 1);
+    }
+    else if (i->material()->type() == Material::SPECULAR)
+    {
+        return i->material()->emission() + color *
+            render_path(scene, reflected, recursion + 1);
+    }
+
+    bool outside = glm::dot(n, i->normal()) > 0;
+    double nc = 1;
+    double nt = 1.5;
+    double nnt = (outside) ? nc / nt : nt / nc;
+    double ddn = glm::dot(ray.direction(), n);
+    double cos2t = 1 - nnt * nnt * (1 - ddn * ddn);
+    
+    if (cos2t < 0)
+    {
+        return i->material()->emission() + color *
+            render_path(scene, reflected, recursion + 1);
+    }
+
+    glm::dvec3 t_dir = glm::normalize(ray.direction() * nnt - i->normal() *
+        ((outside) ? 1.0d : -1.0d) * (ddn * nnt * std::sqrt(cos2t)));
+    
+    double a = nt - nc;
+    double b = nt + nc;
+    double r_0 = a * a / (b * b);
+    double c = 1 - ((outside) ? -ddn : glm::dot(t_dir, i->normal()));
+    double r_e = r_0 + (1 - r_0) * std::pow(c, 5);
+    double t_r = 1 - r_e;
+    double p_i = 0.25 + 0.5 * r_e;
+    double r_p = r_e / p_i;
+    double t_p = t_r / (1 - p_i);
+    
+    return i->material()->emission() + color *
+        ((recursion > 1) ? ((erand48() < p_i) ?
+        render_path(scene, reflected, recursion + 1) * r_p :
+        render_path(scene, reflected, recursion + 1) * t_p) :
+        render_path(scene, reflected, recursion + 1) * r_e +
+        render_path(scene, Ray(i->point(), t_dir), recursion + 1) * t_r);
 }
 
-glm::vec3 Renderer::refract(const glm::vec3 &indice, const glm::vec3 &normal,
-    float refracive_index) const
+glm::dvec3 Renderer::reflect(const glm::dvec3 &indice, const glm::dvec3 &normal)
+    const
 {
-    float cos_i = -std::max(-1.0f, std::min(1.0f, glm::dot(indice, normal)));
-    float eta_i = 1;
-    float eta_t = refracive_index;
+    return indice - 2.0d * normal * glm::dot(indice, normal);
+}
 
-    glm::vec3 n = normal;
+glm::dvec3 Renderer::refract(const glm::dvec3 &indice, const glm::dvec3 &normal,
+    double refracive_index) const
+{
+    double cos_i = -std::max(-1.0d, std::min(1.0d, glm::dot(indice, normal)));
+    double eta_i = 1;
+    double eta_t = refracive_index;
+
+    glm::dvec3 n = normal;
 
     if (cos_i < 0)
     {
@@ -137,9 +291,9 @@ glm::vec3 Renderer::refract(const glm::vec3 &indice, const glm::vec3 &normal,
         n = -n;
     }
 
-    float eta = eta_i / eta_t;
-    float k = 1 - eta * eta * (1 - cos_i * cos_i);
+    double eta = eta_i / eta_t;
+    double k = 1 - eta * eta * (1 - cos_i * cos_i);
 
-    return (k < 0) ? glm::vec3(0) :
+    return (k < 0) ? glm::dvec3(0) :
         indice * eta + n * (eta * cos_i - std::sqrt(k));
 }

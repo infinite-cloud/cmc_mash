@@ -28,7 +28,7 @@ public:
 
     const glm::uvec2 size() const { return _size; }
 
-    const Image &fill(const glm::vec3 &value)
+    const Image &fill(const glm::dvec3 &value)
     {
         std::fill
         (
@@ -37,37 +37,37 @@ public:
             Pixel
             {
                 static_cast<unsigned char>(std::round(
-                    glm::clamp(value.r, 0.0f, 1.0f) * 255.0f)),
+                    glm::clamp(value.r, 0.0d, 1.0d) * 255.0d)),
                 static_cast<unsigned char>(std::round(
-                    glm::clamp(value.g, 0.0f, 1.0f) * 255.0f)),
+                    glm::clamp(value.g, 0.0d, 1.0d) * 255.0d)),
                 static_cast<unsigned char>(std::round(
-                    glm::clamp(value.b, 0.0f, 1.0f) * 255.0f)),
+                    glm::clamp(value.b, 0.0d, 1.0d) * 255.0d)),
             }
         );
 
         return *this;
     }
 
-    const Image &set_pixel(const glm::uvec2 &pos, const glm::vec3 &value)
+    const Image &set_pixel(const glm::uvec2 &pos, const glm::dvec3 &value)
     {
         _data[static_cast<size_t>(pos.x + pos.y * _size.x)] = Pixel
         { 
             static_cast<unsigned char>(std::round(
-                glm::clamp(value.r, 0.0f, 1.0f) * 255.0f)),
+                glm::clamp(value.r, 0.0d, 1.0d) * 255.0d)),
             static_cast<unsigned char>(std::round(
-                glm::clamp(value.g, 0.0f, 1.0f) * 255.0f)),
+                glm::clamp(value.g, 0.0d, 1.0d) * 255.0d)),
             static_cast<unsigned char>(std::round(
-                glm::clamp(value.b, 0.0f, 1.0f) * 255.0f)),
+                glm::clamp(value.b, 0.0d, 1.0d) * 255.0d)),
         };
 
         return *this;
     }
 
-    glm::vec3 get_pixel(const glm::uvec2 &pos) const
+    glm::dvec3 get_pixel(const glm::uvec2 &pos) const
     {
         Pixel p = _data[static_cast<size_t>(pos.x + pos.y * _size.x)];
 
-        return glm::vec3(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f);
+        return glm::dvec3(p.r / 255.0d, p.g / 255.0d, p.b / 255.0d);
     }
 
     const Image &copy_data(const Image &img, const glm::uvec2 &pos)

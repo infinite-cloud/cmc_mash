@@ -4,7 +4,7 @@
 
 std::optional<Intersection> Scene::find_intersection(const Ray &ray) const
 {
-    float closest = std::numeric_limits<float>::infinity();
+    double closest = std::numeric_limits<double>::infinity();
     std::optional<Intersection> intersection = std::nullopt;
 
     for (const auto &o : _objects)
