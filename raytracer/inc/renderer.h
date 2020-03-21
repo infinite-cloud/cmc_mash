@@ -14,29 +14,29 @@
 class Renderer
 {
     glm::uvec2 _size;
-    float _fov;
+    double _fov;
     unsigned _max_recursion;
 
 public:
-    Renderer(const glm::uvec2 size, float fov, unsigned max_recursion) :
+    Renderer(const glm::uvec2 size, double fov, unsigned max_recursion) :
         _size(size), _fov(fov), _max_recursion(max_recursion) {}
 
     Image render(const Scene &scene) const;
 
 private:
     Image render_frag(const Scene &scene, const glm::uvec2 &start,
-        const glm::uvec2 &size) const;
-    glm::vec3 render_pixel(const Scene &scene,
+        const glm::uvec2 &size, bool path_tracing) const;
+    glm::dvec3 render_pixel(const Scene &scene,
         const glm::uvec2 &position) const;
-    glm::vec3 render_ray(const Scene &scene, const Ray &ray,
+    glm::dvec3 render_ray(const Scene &scene, const Ray &ray,
         unsigned recursion = 0) const;
-    glm::vec3 render_path(const Scene &scene, const Ray &ray,
-        unsigned recursion, unsigned short xi[3]) const;
+    glm::dvec3 render_path(const Scene &scene, const Ray &ray,
+        unsigned recursion) const;
 
-    glm::vec3 reflect(const glm::vec3 &indice, const glm::vec3 &normal)
+    glm::dvec3 reflect(const glm::dvec3 &indice, const glm::dvec3 &normal)
         const;
-    glm::vec3 refract(const glm::vec3 &indice, const glm::vec3 &normal,
-        float refracive_index) const;
+    glm::dvec3 refract(const glm::dvec3 &indice, const glm::dvec3 &normal,
+        double refracive_index) const;
 };
 
 #endif // RENDERER_H

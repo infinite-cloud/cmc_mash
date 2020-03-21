@@ -5,20 +5,20 @@
 
 std::optional<Intersection> Sphere::find_intersection(const Ray &r) const
 {
-    glm::vec3 l = r.origin() - _center;
-    float a = glm::dot(r.direction(), r.direction());
-    float b = 2.0f * glm::dot(r.direction(), l);
-    float c = glm::dot(l, l) - _radius * _radius;
+    glm::dvec3 l = r.origin() - _center;
+    double a = glm::dot(r.direction(), r.direction());
+    double b = 2.0d * glm::dot(r.direction(), l);
+    double c = glm::dot(l, l) - _radius * _radius;
 
-    float d = b * b - 4 * c * a;
+    double d = b * b - 4 * c * a;
 
     if (d < 0)
     {
         return std::nullopt;
     }
 
-    float t_0 = -(b + std::sqrt(d)) / (2 * a);
-    float t_1 = -(b - std::sqrt(d)) / (2 * a);
+    double t_0 = -(b + std::sqrt(d)) / (2 * a);
+    double t_1 = -(b - std::sqrt(d)) / (2 * a);
 
     if (t_0 > t_1)
     {
@@ -35,7 +35,7 @@ std::optional<Intersection> Sphere::find_intersection(const Ray &r) const
         }
     }
 
-    glm::vec3 point = r.origin() + t_0 * r.direction();
+    glm::dvec3 point = r.origin() + t_0 * r.direction();
 
     return Intersection
     (
@@ -48,15 +48,15 @@ std::optional<Intersection> Sphere::find_intersection(const Ray &r) const
 
 std::optional<Intersection> Plane::find_intersection(const Ray &r) const
 {
-    float denominator = glm::dot(r.direction(), _normal);
+    double denominator = glm::dot(r.direction(), _normal);
 
-    if (std::abs(denominator) < 1e-3f)
+    if (std::abs(denominator) < 1e-3d)
     {
         return std::nullopt;
     }
 
-    float d = glm::dot(_point, -_normal);
-    float t = -(d + glm::dot(r.origin(), _normal)) / denominator;
+    double d = glm::dot(_point, -_normal);
+    double t = -(d + glm::dot(r.origin(), _normal)) / denominator;
 
     if (t < 0)
     {

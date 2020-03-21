@@ -12,21 +12,21 @@
 
 class Intersection
 {
-    glm::vec3 _point;
-    glm::vec3 _normal;
-    float _distance;
+    glm::dvec3 _point;
+    glm::dvec3 _normal;
+    double _distance;
     
     std::shared_ptr<Material> _material;
 
 public:
-    Intersection(const glm::vec3 &point, const glm::vec3 &normal,
-            float distance, const std::shared_ptr<Material> &material) :
+    Intersection(const glm::dvec3 &point, const glm::dvec3 &normal,
+            double distance, const std::shared_ptr<Material> &material) :
         _point(point), _normal(normal), _distance(distance),
         _material(material) {}
 
-    const glm::vec3 &point() const { return _point; }
-    const glm::vec3 &normal() const { return _normal; }
-    float distance() const { return _distance; }
+    const glm::dvec3 &point() const { return _point; }
+    const glm::dvec3 &normal() const { return _normal; }
+    double distance() const { return _distance; }
     const std::shared_ptr<Material> &material() const { return _material; }
 };
 
@@ -45,11 +45,11 @@ public:
 
 class Sphere : public Object
 {
-    glm::vec3 _center;
-    float _radius;
+    glm::dvec3 _center;
+    double _radius;
 
 public:
-    Sphere(const glm::vec3 &center, float radius,
+    Sphere(const glm::dvec3 &center, double radius,
             const std::shared_ptr<Material> &material) :
         Object(material), _center(center), _radius(radius) {}
 
@@ -58,11 +58,11 @@ public:
 
 class Plane : public Object
 {
-    glm::vec3 _normal;
-    glm::vec3 _point;
+    glm::dvec3 _normal;
+    glm::dvec3 _point;
 
 public:
-    Plane(const glm::vec3 &normal, const glm::vec3 &point,
+    Plane(const glm::dvec3 &normal, const glm::dvec3 &point,
             const std::shared_ptr<Material> &material) :
         Object(material), _normal(normal), _point(point) {}
 
