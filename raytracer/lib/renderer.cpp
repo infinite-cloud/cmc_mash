@@ -20,15 +20,9 @@ double erand48()
 
 Image Renderer::render(const Scene &scene) const
 {
-    return render_frag(scene, glm::uvec2(0, 0), _size, true);
-}
-#include <iostream>
-Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
-        const glm::uvec2 &size, bool path_tracing) const
-{
-    Image img(size);
+    Image img(_size);
 
-    if (!path_tracing)
+    if (!_path_tracing)
     {
         #pragma omp parallel for schedule(dynamic, 1)
         for (size_t y = 0; y < _size.y; ++y)
@@ -42,11 +36,11 @@ Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
     }
     else
     {
-        double fov_scale = 2 * std::tan(0.5d * _fov);
+        double fov_scale = 2 * std::tan(0.5d * _fov) / 4;
         glm::dvec3 cx = glm::dvec3(_size.x * fov_scale / _size.y, 0, 0);
         glm::dvec3 cy = glm::normalize(glm::cross(cx, glm::dvec3(0, 0, -1))) *
             fov_scale;
-        glm::dvec3 origin = glm::dvec3(0); // glm::dvec3(50,52,295.6);
+        glm::dvec3 origin = glm::dvec3(50,52,295.6);
         glm::dvec3 color;
         glm::dvec3 r;
         auto f = [](double x) { return static_cast<int>((std::pow(
@@ -65,7 +59,7 @@ Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
                     {
                         r = glm::dvec3(0);
 
-                        for (size_t s = 0; s < 10; ++s)
+                        for (size_t s = 0; s < 25; ++s)
                         {
                             double r_1 = 2 * erand48();
                             double dx = (r_1 < 1) ? std::sqrt(r_1) - 1:
@@ -80,7 +74,7 @@ Image Renderer::render_frag(const Scene &scene, const glm::uvec2 &start,
                                 glm::dvec3(0, 0, -1);
 
                             r += render_path(scene,
-                                Ray(origin + d, glm::normalize(d)), 0) *
+                                Ray(origin + d * 140.0d, glm::normalize(d)), 0) *
                                 (1.0d / 10);
                         }
 
