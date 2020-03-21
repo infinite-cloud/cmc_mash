@@ -21,14 +21,14 @@ static double erand48()
 Image Renderer::render(const Scene &scene, const Options &options) const
 {
     Image img(options.size);
-    glm::dvec3 color, r;
+    glm::dvec3 color;
     double passes = options.supersampling_level *
         options.supersampling_level;
 
     auto f = [](double x) { return static_cast<int>((std::pow(
         glm::clamp(x, 0.0d, 1.0d), 1.0d / 2.2d) * 255.0d + 0.5d)); };
 
-    #pragma omp parallel for schedule(dynamic, 1) private(color, r)
+    #pragma omp parallel for schedule(dynamic, 1) private(color)
     for (size_t y = 0; y < options.size.y; ++y)
     {
         for (size_t x = 0; x < options.size.x; ++x)
@@ -39,7 +39,7 @@ Image Renderer::render(const Scene &scene, const Options &options) const
             {
                 for (size_t s_x = 0; s_x < options.supersampling_level; ++s_x)
                 {
-                    r = render_pixel(scene, glm::uvec2(x, y),
+                    glm::dvec3 r = render_pixel(scene, glm::uvec2(x, y),
                         options, glm::uvec2(s_x, s_y));
                     color += glm::dvec3(glm::clamp(r.x, 0.0d, 1.0d),
                         glm::clamp(r.y, 0.0d, 1.0d),
