@@ -49,44 +49,44 @@ int main(int argc, char *argv[])
     scene.point_lights().push_back(std::unique_ptr<PointLight>(
         new PointLight(glm::dvec3(30, 20, 30), 1.7d))); */
 
-    auto rubber = std::make_shared<Material>(glm::dvec3(0),
+    auto rubber = Material(glm::dvec3(0),
         glm::dvec3(12), glm::dvec4(0.9, 0.1, 0.0, 0.0), 10.0d, 1.0d,
         Material::DIFFUSE);
-    auto glass = std::make_shared<Material>(glm::dvec3(1,1,1)*.99d,
+    auto glass = Material(glm::dvec3(1,1,1)*.99d,
         glm::dvec3(0.0), glm::dvec4(0.0, 0.5, 0.1, 0.8), 125.0d, 1.5d,
         Material::REFRACTIVE);
-    auto ivory = std::make_shared<Material>(glm::dvec3(.75,.75,.75),
+    auto ivory = Material(glm::dvec3(.75,.75,.75),
         glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0), 50.0d, 1.0d,
         Material::DIFFUSE);
-    auto mirror = std::make_shared<Material>(glm::dvec3(1,1,1)*.99d,
+    auto mirror = Material(glm::dvec3(1,1,1)*.99d,
         glm::dvec3(0.0), glm::dvec4(0.0, 10.0, 0.8, 0.0), 1425.0d, 1.0d,
         Material::SPECULAR);
- /*   scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(0, 0, -160), 50, rubber)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(60, 60, -160), 10, glass)));
+        new Sphere(glm::dvec3(0, 0, -160), 50, &rubber)));
+    scene.objects().push_back(std::unique_ptr<Sphere>(
+        new Sphere(glm::dvec3(60, 60, -160), 10, &glass)));
     scene.objects().push_back(std::unique_ptr<Plane>(
         new Plane(glm::normalize(glm::dvec3(0, 1, 0)),
-        glm::dvec3(0, -90, -160), glass)));
+        glm::dvec3(0, -90, -160), &glass)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(60, -60, -160), 10, ivory))); */
+        new Sphere(glm::dvec3(60, -60, -160), 10, &ivory))); 
         
+ /*   scene.objects().push_back(std::unique_ptr<Sphere>(
+        new Sphere(glm::dvec3(1e5+1,40.8,81.6), 1e5, &ivory)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(1e5+1,40.8,81.6), 1e5, ivory)));
+        new Sphere(glm::dvec3(-1e5+99,40.8,81.6), 1e5, &ivory)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(-1e5+99,40.8,81.6), 1e5, ivory)));
+        new Sphere(glm::dvec3(50,40.8, 1e5), 1e5, &ivory)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(50,40.8, 1e5), 1e5, ivory)));
+        new Sphere(glm::dvec3(50, 1e5, 81.6), 1e5, &ivory)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(50, 1e5, 81.6), 1e5, ivory)));
+        new Sphere(glm::dvec3(50,-1e5+81.6,81.6), 1e5, &ivory)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(50,-1e5+81.6,81.6), 1e5, ivory)));
+        new Sphere(glm::dvec3(27,16.5,47), 16.5, &mirror)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(27,16.5,47), 16.5, mirror)));
+        new Sphere(glm::dvec3(73,16.5,78), 16.5, &glass)));
     scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(73,16.5,78), 16.5, glass)));
-    scene.objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(50,681.6-.27,81.6), 600, rubber)));
+        new Sphere(glm::dvec3(50,681.6-.27,81.6), 600, &rubber))); */
 
     Image img = test.render(scene);
     img.save_bmp("test.bmp");
