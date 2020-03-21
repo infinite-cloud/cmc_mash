@@ -9,16 +9,16 @@
 
 class SceneLoader
 {
-    Material ivory = Material(glm::dvec3(0.4, 0.4, 0.3),
+    Material _ivory = Material(glm::dvec3(0.4, 0.4, 0.3),
         glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
         50.0d, 1.0d, Material::DIFFUSE);
-    Material rubber = Material(glm::dvec3(0.3, 0.1, 0.1),
+    Material _rubber = Material(glm::dvec3(0.3, 0.1, 0.1),
         glm::dvec3(0.0), glm::dvec4(0.9, 0.1, 0.0, 0.0),
         10.0d, 1.0d, Material::DIFFUSE);
-    Material mirror = Material(glm::dvec3(1.0, 1.0, 1.0),
+    Material _mirror = Material(glm::dvec3(1.0, 1.0, 1.0),
         glm::dvec3(0.0), glm::dvec4(0.0, 10.0, 0.8, 0.0),
         1425.0d, 1.0d, Material::SPECULAR);
-    Material glass = Material(glm::dvec3(0.6, 0.7, 0.8),
+    Material _glass = Material(glm::dvec3(0.6, 0.7, 0.8),
         glm::dvec3(0.0), glm::dvec4(0.0, 0.5, 0.1, 0.8),
         125.0d, 1.5d, Material::REFRACTIVE);
 
