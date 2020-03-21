@@ -10,82 +10,50 @@
 #include "object.h"
 #include "ray.h"
 
-std::default_random_engine generator;
-std::uniform_real_distribution<double> distr(0.0, 1.0);
+static std::default_random_engine generator;
+static std::uniform_real_distribution<double> distr(0.0, 1.0);
 
-double erand48()
+static double erand48()
 {
     return distr(generator);
 }
 
-Image Renderer::render(const Scene &scene) const
+Image Renderer::render(const Scene &scene, const Options &options) const
 {
-    Image img(_size);
+    Image img(options.size);
+    glm::dvec3 color, r;
+    double passes = options.supersampling_level *
+        options.supersampling_level;
 
-    if (!_path_tracing)
+    auto f = [](double x) { return static_cast<int>((std::pow(
+        glm::clamp(x, 0.0d, 1.0d), 1.0d / 2.2d) * 255.0d + 0.5d)); };
+
+    #pragma omp parallel for schedule(dynamic, 1) private(color, r)
+    for (size_t y = 0; y < options.size.y; ++y)
     {
-        #pragma omp parallel for schedule(dynamic, 1)
-        for (size_t y = 0; y < _size.y; ++y)
+        for (size_t x = 0; x < options.size.x; ++x)
         {
-            for (size_t x = 0; x < _size.x; ++x)
-            {
-                glm::dvec3 color = render_pixel(scene, glm::uvec2(x, y));
-                img.set_pixel(glm::uvec2(x, y), color);
-            }
-        }
-    }
-    else
-    {
-        double fov_scale = 2 * std::tan(0.5d * _fov);
-        glm::dvec3 cx = glm::dvec3(_size.x * fov_scale / _size.y, 0, 0);
-        glm::dvec3 cy = glm::normalize(glm::cross(cx, glm::dvec3(0, 0, -1))) *
-            fov_scale;
-        glm::dvec3 color;
-        glm::dvec3 r;
-        auto f = [](double x) { return static_cast<int>((std::pow(
-            glm::clamp(x, 0.0d, 1.0d), 1.0d / 2.2d) * 255.0d + 0.5d)); };
+            color = glm::dvec3(0);
 
-        #pragma omp parallel for schedule(dynamic, 1) private(color, r)
-        for (size_t y = 0; y < _size.y; ++y)
-        {
-            for (size_t x = 0; x < _size.x; ++x)
+            for (size_t s_y = 0; s_y < options.supersampling_level; ++s_y)
             {
-                color = glm::dvec3(0);
-
-                for (size_t s_y = 0; s_y < 2; ++s_y)
+                for (size_t s_x = 0; s_x < options.supersampling_level; ++s_x)
                 {
-                    for (size_t s_x = 0; s_x < 2; ++s_x)
-                    {
-                        r = glm::dvec3(0);
-
-                        for (size_t s = 0; s < 20; ++s)
-                        {
-                            double r_1 = 2 * erand48();
-                            double dx = (r_1 < 1) ? std::sqrt(r_1) - 1:
-                                1 - std::sqrt(2 - r_1);
-                            double r_2 = 2 * erand48();
-                            double dy = (r_2 < 1) ? std::sqrt(r_2) - 1:
-                                1 - std::sqrt(2 - r_2);
-                            glm::dvec3 d = cx * (((s_x + 0.5d + dx) / 2 + x) /
-                                _size.x - 0.5d) +
-                                cy * (((s_y + 0.5d + dy) / 2 + y) /
-                                _size.y - 0.5d) +
-                                glm::dvec3(0, 0, -1);
-
-                            r += render_path(scene,
-                                Ray(d, glm::normalize(d)), 0) *
-                                (1.0d / 10);
-                        }
-
-                        color += glm::dvec3(glm::clamp(r.x, 0.0d, 1.0d),
-                            glm::clamp(r.y, 0.0d, 1.0d),
-                            glm::clamp(r.z, 0.0d, 1.0d)) * 0.25d;
-                    }
+                    r = render_pixel(scene, glm::uvec2(x, y),
+                        options, glm::uvec2(s_x, s_y));
+                    color += glm::dvec3(glm::clamp(r.x, 0.0d, 1.0d),
+                        glm::clamp(r.y, 0.0d, 1.0d),
+                        glm::clamp(r.z, 0.0d, 1.0d)) / passes;
                 }
-
-                color = glm::dvec3(f(color.x), f(color.y), f(color.z)) / 255.0d;
-                img.set_pixel(glm::uvec2(x, _size.y - y - 1), color);
             }
+
+            if (options.paths_per_pixel > 0)
+            {
+                color = glm::dvec3(f(color.x), f(color.y), f(color.z)) /
+                    255.0d;
+            }
+
+            img.set_pixel(glm::uvec2(x, y), color);
         }
     }
 
@@ -93,28 +61,67 @@ Image Renderer::render(const Scene &scene) const
 }
 
 glm::dvec3 Renderer::render_pixel(const Scene &scene,
-        const glm::uvec2 &position) const
+        const glm::uvec2 &position, const Options &options,
+        const glm::uvec2 &supersample) const
 {
+    double fov_scale = 2.0d * std::tan(0.5d * options.fov);
+
+    glm::dvec3 c_x = glm::dvec3(options.size.x * fov_scale /
+        options.size.y, 0, 0);
+    glm::dvec3 c_y = -glm::normalize(glm::cross(c_x,
+        glm::dvec3(0, 0, -1))) * fov_scale;
+
     double x_i = (2.0d * (position.x + 0.5d) /
-        static_cast<double>(_size.x) - 1.0d) *
-        std::tan(_fov / 2.0d) * _size.x / _size.y;
+        static_cast<double>(options.size.x) - 1.0d) *
+        std::tan(options.fov * 0.5d) *
+        options.size.x / options.size.y;
     double y_i = -(2.0d * (position.y + 0.5d) /
-        static_cast<double>(_size.y) - 1.0d) *
-        std::tan(_fov / 2.0d);
+        static_cast<double>(options.size.y) - 1.0d) *
+        std::tan(options.fov * 0.5d);
 
-    glm::dvec3 direction = glm::normalize(glm::dvec3(x_i, y_i, -1));
+    if (options.paths_per_pixel == 0)
+    {
+        glm::dvec3 direction = glm::normalize(glm::dvec3(x_i, y_i, -1));
+        Ray ray(glm::dvec3(0.0), direction);
 
-    Ray ray(glm::dvec3(0.0), direction);
+        return render_ray(scene, ray);
+    }
+    else
+    {
+        size_t samples = options.paths_per_pixel /
+            (options.supersampling_level * options.supersampling_level);
+        glm::dvec3 r = glm::dvec3(0);
 
-    return render_ray(scene, ray);
+        for (size_t s = 0; s < samples; ++s)
+        {
+            double r_1 = 2 * erand48();
+            double d_x = (r_1 < 1) ? std::sqrt(r_1) - 1 :
+                1 - std::sqrt(2 - r_1);
+            double r_2 = 2 * erand48();
+            double d_y = (r_2 < 1) ? std::sqrt(r_2) - 1 :
+                1 - std::sqrt(2 - r_2);
+
+            glm::dvec3 d = c_x *
+                (((supersample.x + 0.5d + d_x) / 2 + position.x) /
+                options.size.x - 0.5d) +
+                c_y * (((supersample.y + 0.5d + d_y) / 2 + position.y) /
+                options.size.y - 0.5d) + glm::dvec3(0, 0, -1);
+
+            r += render_path(scene,
+                Ray(d, glm::normalize(d))) /
+                static_cast<double>(options.paths_per_pixel);
+        }
+
+        return r;
+    }
 }
 
 glm::dvec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
-        unsigned recursion) const
+        unsigned recursion, unsigned max_recursion) const
 {
     std::optional<Intersection> i = scene.find_intersection(ray);
 
-    if (recursion > _max_recursion || !i)
+    if (recursion > max_recursion || !i)
     {
         return glm::dvec3(0.2, 0.7, 0.8);
     }
@@ -177,7 +184,7 @@ glm::dvec3 Renderer::render_ray(const Scene &scene, const Ray &ray,
 }
 
 glm::dvec3 Renderer::render_path(const Scene &scene, const Ray &ray,
-    unsigned recursion) const
+    unsigned recursion, unsigned max_recursion) const
 {
     std::optional<Intersection> i = scene.find_intersection(ray);
 
@@ -189,7 +196,7 @@ glm::dvec3 Renderer::render_path(const Scene &scene, const Ray &ray,
     glm::dvec3 color = i->material()->diffuse_color();
     double p = std::max(color.x, std::max(color.y, color.z));
 
-    if (recursion > _max_recursion)
+    if (recursion > max_recursion)
     {
         if (erand48() < p)
         {
