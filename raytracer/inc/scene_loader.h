@@ -13,9 +13,9 @@ class SceneLoader
         glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
         50.0d, 1.0d, Material::DIFFUSE);
     Material _rubber = Material(glm::dvec3(0.3, 0.1, 0.1),
-        glm::dvec3(0.0), glm::dvec4(0.9, 0.1, 0.0, 0.0),
+        glm::dvec3(20.0), glm::dvec4(0.9, 0.1, 0.0, 0.0),
         10.0d, 1.0d, Material::DIFFUSE);
-    Material _mirror = Material(glm::dvec3(1.0, 1.0, 1.0),
+    Material _mirror = Material(glm::dvec3(0.99, 0.99, 0.99),
         glm::dvec3(0.0), glm::dvec4(0.0, 10.0, 0.8, 0.0),
         1425.0d, 1.0d, Material::SPECULAR);
     Material _glass = Material(glm::dvec3(0.6, 0.7, 0.8),

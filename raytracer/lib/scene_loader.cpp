@@ -40,19 +40,19 @@ std::unique_ptr<Scene> SceneLoader::scene_2()
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(-1e5 - 20, 0, -20), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(0, 0, 1e5 + 40), 1e5, &_ivory)));
+        new Sphere(glm::dvec3(0, 0, 1e5 + 0.5), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(0, 0, -1e5 - 40), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(0, -1e5 - 20, -20), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(0, 1e5 + 20, -20), 1e5, &_ivory)));
+        new Sphere(glm::dvec3(0, 1e5 + 10, -20), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(8, -12, -24), 8, &_mirror)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(-10, -15, -25), 5, &_glass)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(0, 620, -20), 600, &_rubber)));
+        new Sphere(glm::dvec3(0, 609.96, -20), 600, &_rubber)));
 
     scene->point_lights().push_back(std::unique_ptr<PointLight>(
         new PointLight(glm::dvec3(0, 5, -20), 1.5d)));
