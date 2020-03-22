@@ -4,7 +4,6 @@
 #include <glm/gtx/norm.hpp>
 
 #include "object.h"
-#include "solver.h"
 
 std::optional<Intersection> Sphere::find_intersection(const Ray &r) const
 {

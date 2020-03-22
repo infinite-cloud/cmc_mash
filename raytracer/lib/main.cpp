@@ -11,7 +11,9 @@
 
 #include "image.h"
 #include "renderer.h"
+#include "scene.h"
 #include "scene_loader.h"
+#include "timer.h"
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +56,8 @@ int main(int argc, char *argv[])
 
     Renderer renderer;
     SceneLoader loader;
+    std::unique_ptr<Scene> scene;
+    Image img;
 
     switch (options.scene_num)
     {
@@ -72,10 +76,42 @@ int main(int argc, char *argv[])
             break;
     }
 
-    std::unique_ptr<Scene> scene =
-        std::move(loader.load_scene(options.scene_num));
+    {
+        std::cout << "Loading scene " << options.scene_num <<
+            "..." << std::endl;
 
-    renderer.render(*scene, options).save_bmp(options.out_path);
+        Timer timer;
+
+        scene = std::move(loader.load_scene(options.scene_num));
+
+        std::cout << "Done. Elapsed time: ";
+    }
+
+    std::cout << "." << std::endl;
+    std::cout << std::endl;
+
+    {
+        std::cout << "Rendering..." << std::endl;
+
+        Timer timer;
+
+        img = renderer.render(*scene, options);
+        std::cout << "Done. Elapsed time: ";
+    }
+
+    std::cout << "." << std::endl;
+    std::cout << std::endl;
+
+    {
+        std::cout << "Saving " << options.out_path << "..." << std::endl;
+
+        Timer timer;
+
+        img.save_bmp(options.out_path);
+        std::cout << "Done. Elapsed time: ";
+    }
+
+    std::cout << "." << std::endl;
 
     return 0;
 }
