@@ -24,6 +24,9 @@ std::unique_ptr<Scene> SceneLoader::scene_1()
     scene->objects().push_back(std::unique_ptr<Plane>(
         new Plane(glm::normalize(glm::dvec3(0, 1, 0)),
         glm::dvec3(0, -3.5, 0), &_ivory)));
+    scene->objects().push_back(std::unique_ptr<Cylinder>(
+        new Cylinder(glm::dvec3(-5, -2.5, -14),
+        glm::normalize(glm::dvec3(1, 0, 0.4)), 1.0d, 1.0d, &_rubber)));
 
     std::vector<Vertex> v;
     std::vector<Triangle> t;

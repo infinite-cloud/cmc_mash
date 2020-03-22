@@ -105,4 +105,20 @@ private:
     void regen_bvh(size_t delta);
 };
 
+class Cylinder : public Object
+{
+    glm::dvec3 _bottom_center;
+    glm::dvec3 _axis;
+    double _radius;
+    double _height;
+
+public:
+    Cylinder(const glm::dvec3 &bottom_center, const glm::dvec3 &axis,
+            double radius, double height, const Material *material) :
+        Object(material), _bottom_center(bottom_center), _axis(axis),
+        _radius(radius), _height(height) {}
+
+    std::optional<Intersection> find_intersection(const Ray &r) const;
+};
+
 #endif // OBJECT_H

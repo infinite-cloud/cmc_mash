@@ -1,7 +1,10 @@
 #include <cmath>
 #include <algorithm>
 
+#include <glm/gtx/norm.hpp>
+
 #include "object.h"
+#include "solver.h"
 
 std::optional<Intersection> Sphere::find_intersection(const Ray &r) const
 {
@@ -183,4 +186,109 @@ void Mesh::regen_bvh(size_t delta)
             return calculate_box(t);
         }
     );
+}
+
+std::optional<Intersection> Cylinder::find_intersection(const Ray &r) const
+{
+	double i_rd = glm::l2Norm(r.direction());
+	std::vector<double> points;
+	glm::dvec3 alpha = _axis * glm::dot(r.direction(), _axis);
+	glm::dvec3 delta_p = r.origin() - _bottom_center;
+	glm::dvec3 beta = _axis * glm::dot(delta_p, _axis);
+	glm::dvec3 center = _bottom_center + _axis * _height;
+
+	double a = glm::l2Norm(r.direction() - alpha);
+
+    a *= a;
+
+    double b = 2.0d * glm::dot(r.direction() - alpha, delta_p - beta);
+    double c = glm::l2Norm(delta_p - beta);
+    
+    c = c * c - _radius * _radius;
+
+    double d = b * b - 4 * a * c;
+
+    if (d < 0.0d)
+    {
+        return std::nullopt;
+    }
+    else
+    {
+        d = std::sqrt(d);
+		double t_1 = (-b + d) / (2 * a);
+		double t_2 = (-b - d) / (2 * a);
+
+        if (t_1 >= 0.0d)
+        {
+            if (glm::dot(_axis, (r.origin() - _bottom_center) +
+                r.direction() * t_1) > 0.0d &&
+                glm::dot(_axis, (r.origin() - center) +
+                r.direction() * t_1) < 0.0d)
+            {
+                points.push_back(t_1);
+            }
+        }
+        if (t_2 >= 0)
+        {
+            if(glm::dot(_axis, (r.origin() - _bottom_center) +
+                r.direction() * t_2) > 0.0d &&
+                glm::dot(_axis, (r.origin() - center) +
+                r.direction() * t_2) < 0.0d)
+            {
+                points.push_back(t_2);
+            }
+        }
+    }
+
+    double denominator = glm::dot(r.direction(), _axis);
+
+    if (denominator > 1e-5d)
+    {
+        glm::dvec3 co = _bottom_center - r.origin();
+        double t_3 = glm::dot(co, _axis) / denominator;
+
+        double l = glm::l2Norm(r.direction() * t_3 - co);
+
+        if(t_3 > 0.0d && l * l <= _radius * _radius)
+        {
+            points.push_back(t_3);
+        }
+    }
+    else if (denominator < 1e-5d)
+    {
+        glm::dvec3 co = center - r.origin();
+        double t_4 = glm::dot(co, _axis) / denominator;
+
+        double l = glm::l2Norm(r.direction() * t_4 - co);
+
+        if (t_4 > 0.0d && l * l <= _radius * _radius)
+        {
+            points.push_back(t_4);
+        }
+    }
+
+    double min_t = std::numeric_limits<double>::infinity();
+
+    for(const auto &o : points)
+    {
+        if(min_t > o && o >= 0.0d)
+        {
+            min_t = o;
+        }
+    }
+
+    if (min_t < std::numeric_limits<double>::infinity())
+    {
+        double t = min_t / i_rd;
+
+        glm::dvec3 point = r.origin() + (min_t / i_rd) * r.direction();
+        glm::dvec3 normal = glm::normalize(glm::cross(
+            _axis, glm::cross(point - _bottom_center, _axis)));
+
+        return Intersection(point, normal, t, material());
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
