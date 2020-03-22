@@ -112,7 +112,7 @@ glm::dvec3 Renderer::render_pixel(const Scene &scene,
                 options.size.y - 0.5d) + glm::dvec3(0, 0, -1);
 
             r += render_path(scene,
-                Ray(d, glm::normalize(d))) /
+                Ray(options.camera_origin + d, glm::normalize(d))) /
                 static_cast<double>(options.paths_per_pixel);
         }
 
