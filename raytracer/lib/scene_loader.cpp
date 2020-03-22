@@ -14,7 +14,7 @@ std::unique_ptr<Scene> SceneLoader::scene_1()
     auto scene = std::unique_ptr<Scene>(new Scene());
 
     scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(-3, 0, -16), 2.0d, &_ivory)));
+        new Sphere(glm::dvec3(-3, 0, -16), 2.0d, &_green)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(-1, -1.5, -12), 2.0d, &_glass)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
@@ -26,7 +26,7 @@ std::unique_ptr<Scene> SceneLoader::scene_1()
         glm::dvec3(0, -3.5, 0), &_ivory)));
     scene->objects().push_back(std::unique_ptr<Cylinder>(
         new Cylinder(glm::dvec3(-5, -2.5, -14),
-        glm::normalize(glm::dvec3(1, 0, 0.4)), 1.0d, 1.0d, &_rubber)));
+        glm::normalize(glm::dvec3(1, 0, 0.4)), 1.0d, 1.0d, &_blue)));
 
     std::vector<Vertex> v;
     std::vector<Triangle> t;

@@ -12,12 +12,12 @@ class SceneLoader
     Material _ivory = Material(glm::dvec3(0.4, 0.4, 0.3),
         glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
         50.0d, 1.0d, Material::DIFFUSE);
-    Material _green = Material(glm::dvec3(0.0, 0.99, 0.0),
+    Material _green = Material(glm::dvec3(0.21, 0.59, 0.29),
         glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
-        50.0d, 1.0d, Material::DIFFUSE);
+        40.0d, 1.0d, Material::DIFFUSE);
     Material _blue = Material(glm::dvec3(0.0, 0.74, 0.99),
-        glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
-        50.0d, 1.0d, Material::DIFFUSE);
+        glm::dvec3(30.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
+        20.0d, 1.0d, Material::DIFFUSE);
     Material _white = Material(glm::dvec3(0.99, 0.99, 0.99),
         glm::dvec3(0.0), glm::dvec4(0.6, 0.3, 0.1, 0.0),
         50.0d, 1.0d, Material::DIFFUSE);
