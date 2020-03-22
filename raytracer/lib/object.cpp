@@ -72,16 +72,20 @@ std::optional<Intersection> Mesh::find_intersection(const Ray &r) const
     double distance = std::numeric_limits<double>::infinity();
     std::optional<Intersection> intersection = std::nullopt;
 
-    for (const auto &t : _triangles)
-    {
-        auto new_intersection = find_intersection(r, t);
-        
-        if (new_intersection && new_intersection->distance() < distance)
+    _bvh.search
+    (
+        r,
+        [&](auto &o)
         {
-            distance = new_intersection->distance();
-            intersection = new_intersection;
+            auto new_intersection = find_intersection(r, o);
+
+            if (new_intersection && new_intersection->distance() < distance)
+            {
+                distance = new_intersection->distance();
+                intersection = new_intersection;
+            }
         }
-    }
+    );
 
     return intersection;
 }
@@ -133,4 +137,50 @@ std::optional<Intersection> Mesh::find_intersection(const Ray &r,
         glm::normalize((1.0f - u - v) * a.normal +
         u * b.normal + v * c.normal),
         t_0, material());
+}
+
+BoundingBox Mesh::calculate_triangle_box(const Triangle &t) const
+{
+    const auto &a = _vertices[t.a].position;
+    const auto &b = _vertices[t.b].position;
+    const auto &c = _vertices[t.c].position;
+
+    return BoundingBox
+    (
+        glm::vec3
+        (
+            std::min(a.x, std::min(b.x, c.x)),
+            std::min(a.y, std::min(b.y, c.y)),
+            std::min(a.z, std::min(b.z, c.z))
+        ),
+        glm::vec3
+        (
+            std::max(a.x, std::max(b.x, c.x)),
+            std::max(a.y, std::max(b.y, c.y)),
+            std::max(a.z, std::max(b.z, c.z))
+        )
+    );
+}
+
+void Mesh::regen_bvh(size_t delta)
+{
+    _bvh = BVH<Triangle>::construct
+    (
+        ([this]()
+        {
+            std::vector<Triangle *> ts;
+
+            for (auto &t : _triangles)
+            {
+                ts.push_back(&t);
+            }
+
+            return ts;
+        })(),
+        delta,
+        [this](const auto& t)
+        {
+            return calculate_triangle_box(t);
+        }
+    );
 }

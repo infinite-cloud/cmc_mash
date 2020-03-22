@@ -7,7 +7,7 @@ LDIR = lib
 
 _DEPS = image.h ray.h scene.h
 _DEPS += renderer.h object.h light.h
-_DEPS += scene_loader.h model.h
+_DEPS += scene_loader.h model.h bvh.h
 _DEPS += glm/*.hpp stb/*.h
 DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
 

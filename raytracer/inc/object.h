@@ -10,6 +10,7 @@
 
 #include "ray.h"
 #include "material.h"
+#include "bvh.h"
 
 class Intersection
 {
@@ -87,16 +88,21 @@ class Mesh : public Object
 {
     std::vector<Vertex> _vertices;
     std::vector<Triangle> _triangles;
+    BVH<Triangle> _bvh;
 
 public:
     Mesh(std::vector<Vertex> vertices, std::vector<Triangle> triangles,
             const Material *material) :
         Object(material), _vertices(std::move(vertices)),
-        _triangles(triangles) {}
+        _triangles(triangles) { regen_bvh(100); }
 
     std::optional<Intersection> find_intersection(const Ray &r) const;
     std::optional<Intersection> find_intersection(const Ray &r,
         const Triangle &t) const;
+
+private:
+    BoundingBox calculate_triangle_box(const Triangle &t) const;
+    void regen_bvh(size_t delta);
 };
 
 #endif // OBJECT_H
