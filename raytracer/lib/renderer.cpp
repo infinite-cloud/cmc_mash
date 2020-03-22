@@ -253,7 +253,7 @@ glm::dvec3 Renderer::render_path(const Scene &scene, const Ray &ray,
     }
 
     glm::dvec3 t_dir = glm::normalize(ray.direction() * nnt - i->normal() *
-        ((outside) ? 1.0d : -1.0d) * (ddn * nnt * std::sqrt(cos2t)));
+        ((outside) ? 1.0d : -1.0d) * (ddn * nnt + std::sqrt(cos2t)));
     
     double a = nt - nc;
     double b = nt + nc;
