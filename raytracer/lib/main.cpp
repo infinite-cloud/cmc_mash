@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     std::cout << std::endl;
 
     {
-        std::cout << "Saving " << options.out_path << "..." << std::endl;
+        std::cout << "Saving \"" << options.out_path << "\"..." << std::endl;
 
         Timer timer;
 
