@@ -61,6 +61,10 @@ int main(int argc, char *argv[])
 
     switch (options.scene_num)
     {
+        case 1:
+            options.camera_origin = glm::dvec3(0, 0, 0);
+            break;
+
         case 2:
             options.paths_per_pixel = 100;
             options.camera_origin = glm::dvec3(0, 0, 0);
@@ -72,7 +76,9 @@ int main(int argc, char *argv[])
             break;
 
         default:
-            options.camera_origin = glm::dvec3(0, 0, 0);
+            std::cout << "Scene " << std::to_string(options.scene_num) <<
+                " does not exist. Exiting..." << std::endl;
+            exit(1);
             break;
     }
 
@@ -107,8 +113,8 @@ int main(int argc, char *argv[])
 
         Timer timer;
 
-        img.save_bmp(options.out_path);
-        std::cout << "Done. Elapsed time: ";
+        std::cout << ((img.save_bmp(options.out_path)) ?
+            "Done. " : "Failed. ") << "Elapsed time: ";
     }
 
     std::cout << "." << std::endl;
