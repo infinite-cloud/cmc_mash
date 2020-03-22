@@ -86,7 +86,7 @@ glm::dvec3 Renderer::render_pixel(const Scene &scene,
     if (options.paths_per_pixel == 0)
     {
         glm::dvec3 direction = glm::normalize(glm::dvec3(x_i, y_i, -1));
-        Ray ray(glm::dvec3(0.0), direction);
+        Ray ray(options.camera_origin, direction);
 
         return render_ray(scene, ray);
     }

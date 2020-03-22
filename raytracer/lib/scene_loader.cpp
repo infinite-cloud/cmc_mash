@@ -7,6 +7,7 @@
 #include "scene_loader.h"
 #include "light.h"
 #include "object.h"
+#include "model.h"
 
 std::unique_ptr<Scene> SceneLoader::scene_1()
 {
@@ -93,5 +94,18 @@ std::unique_ptr<Scene> SceneLoader::scene_2()
 
 std::unique_ptr<Scene> SceneLoader::scene_3()
 {
-    return std::unique_ptr<Scene>(new Scene());
+    auto scene = std::unique_ptr<Scene>(new Scene());
+    Model model;
+
+    model.load("bunny.obj", &_glass);
+
+    scene->objects().push_back(std::move(model.mesh()));
+    scene->objects().push_back(std::unique_ptr<Plane>(
+        new Plane(glm::normalize(glm::dvec3(0, 1, 0)),
+        glm::dvec3(0), &_ivory)));
+
+    scene->point_lights().push_back(std::unique_ptr<PointLight>(
+        new PointLight(glm::dvec3(-1, 1.5, 1), 1.5d)));
+
+    return scene;
 }
