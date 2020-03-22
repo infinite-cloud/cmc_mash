@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
     opts.size = glm::uvec2(1024, 768);
     opts.fov = std::acos(-1.0d) / 2.0d;
     opts.max_recursion = 5;
-    opts.supersampling_level = 2;
-    opts.paths_per_pixel = 100;
+    opts.supersampling_rays = 2;
+    opts.paths_per_pixel = 0;
 
     Renderer test;
     SceneLoader loader;

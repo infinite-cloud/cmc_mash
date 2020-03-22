@@ -22,8 +22,8 @@ Image Renderer::render(const Scene &scene, const Options &options) const
 {
     Image img(options.size);
     glm::dvec3 color;
-    double passes = options.supersampling_level *
-        options.supersampling_level;
+    double passes = options.supersampling_rays *
+        options.supersampling_rays;
 
     auto f = [](double x) { return static_cast<int>((std::pow(
         glm::clamp(x, 0.0d, 1.0d), 1.0d / 2.2d) * 255.0d + 0.5d)); };
@@ -35,9 +35,9 @@ Image Renderer::render(const Scene &scene, const Options &options) const
         {
             color = glm::dvec3(0);
 
-            for (size_t s_y = 0; s_y < options.supersampling_level; ++s_y)
+            for (size_t s_y = 0; s_y < options.supersampling_rays; ++s_y)
             {
-                for (size_t s_x = 0; s_x < options.supersampling_level; ++s_x)
+                for (size_t s_x = 0; s_x < options.supersampling_rays; ++s_x)
                 {
                     glm::dvec3 r = render_pixel(scene, glm::uvec2(x, y),
                         options, glm::uvec2(s_x, s_y));
@@ -71,11 +71,15 @@ glm::dvec3 Renderer::render_pixel(const Scene &scene,
     glm::dvec3 c_y = -glm::normalize(glm::cross(c_x,
         glm::dvec3(0, 0, -1))) * fov_scale;
 
-    double x_i = (2.0d * (position.x + 0.5d) /
+    double x_i = (2.0d * (position.x +
+        static_cast<double>(supersample.x + 1) /
+        options.supersampling_rays + 0.5d) /
         static_cast<double>(options.size.x) - 1.0d) *
         std::tan(options.fov * 0.5d) *
         options.size.x / options.size.y;
-    double y_i = -(2.0d * (position.y + 0.5d) /
+    double y_i = -(2.0d * (position.y +
+        static_cast<double>(supersample.y + 1) /
+        options.supersampling_rays + 0.5d) /
         static_cast<double>(options.size.y) - 1.0d) *
         std::tan(options.fov * 0.5d);
 
@@ -89,7 +93,7 @@ glm::dvec3 Renderer::render_pixel(const Scene &scene,
     else
     {
         size_t samples = options.paths_per_pixel /
-            (options.supersampling_level * options.supersampling_level);
+            (options.supersampling_rays * options.supersampling_rays);
         glm::dvec3 r = glm::dvec3(0);
 
         for (size_t s = 0; s < samples; ++s)

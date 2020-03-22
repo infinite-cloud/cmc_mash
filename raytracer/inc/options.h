@@ -8,7 +8,7 @@ struct Options
     glm::uvec2 size;
     double fov;
     unsigned max_recursion;
-    unsigned supersampling_level;
+    unsigned supersampling_rays;
     unsigned paths_per_pixel;
 };
 
