@@ -101,7 +101,7 @@ public:
         const Triangle &t) const;
 
 private:
-    BoundingBox calculate_triangle_box(const Triangle &t) const;
+    BoundingBox calculate_box(const Triangle &t) const;
     void regen_bvh(size_t delta);
 };
 

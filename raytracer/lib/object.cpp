@@ -139,7 +139,7 @@ std::optional<Intersection> Mesh::find_intersection(const Ray &r,
         t_0, material());
 }
 
-BoundingBox Mesh::calculate_triangle_box(const Triangle &t) const
+BoundingBox Mesh::calculate_box(const Triangle &t) const
 {
     const auto &a = _vertices[t.a].position;
     const auto &b = _vertices[t.b].position;
@@ -180,7 +180,7 @@ void Mesh::regen_bvh(size_t delta)
         delta,
         [this](const auto& t)
         {
-            return calculate_triangle_box(t);
+            return calculate_box(t);
         }
     );
 }
