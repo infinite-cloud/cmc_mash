@@ -189,20 +189,20 @@ void Mesh::regen_bvh(size_t delta)
 
 std::optional<Intersection> Cylinder::find_intersection(const Ray &r) const
 {
-	double i_rd = glm::l2Norm(r.direction());
-	std::vector<double> points;
-	glm::dvec3 alpha = _axis * glm::dot(r.direction(), _axis);
-	glm::dvec3 delta_p = r.origin() - _bottom_center;
-	glm::dvec3 beta = _axis * glm::dot(delta_p, _axis);
-	glm::dvec3 center = _bottom_center + _axis * _height;
+    double i_rd = glm::l2Norm(r.direction());
+    glm::dvec3 alpha = _axis * glm::dot(r.direction(), _axis);
+    glm::dvec3 delta_p = r.origin() - _bottom_center;
+    glm::dvec3 beta = _axis * glm::dot(delta_p, _axis);
+    glm::dvec3 center = _bottom_center + _axis * _height;
+    double min_t = std::numeric_limits<double>::infinity();
 
-	double a = glm::l2Norm(r.direction() - alpha);
+    double a = glm::l2Norm(r.direction() - alpha);
 
     a *= a;
 
     double b = 2.0d * glm::dot(r.direction() - alpha, delta_p - beta);
     double c = glm::l2Norm(delta_p - beta);
-    
+
     c = c * c - _radius * _radius;
 
     double d = b * b - 4 * a * c;
@@ -222,9 +222,10 @@ std::optional<Intersection> Cylinder::find_intersection(const Ray &r) const
             if (glm::dot(_axis, (r.origin() - _bottom_center) +
                 r.direction() * t_1) > 0.0d &&
                 glm::dot(_axis, (r.origin() - center) +
-                r.direction() * t_1) < 0.0d)
+                r.direction() * t_1) < 0.0d &&
+                min_t > t_1)
             {
-                points.push_back(t_1);
+                min_t = t_1;
             }
         }
         if (t_2 >= 0)
@@ -232,9 +233,10 @@ std::optional<Intersection> Cylinder::find_intersection(const Ray &r) const
             if(glm::dot(_axis, (r.origin() - _bottom_center) +
                 r.direction() * t_2) > 0.0d &&
                 glm::dot(_axis, (r.origin() - center) +
-                r.direction() * t_2) < 0.0d)
+                r.direction() * t_2) < 0.0d &&
+                min_t > t_2)
             {
-                points.push_back(t_2);
+                min_t = t_2;
             }
         }
     }
@@ -248,9 +250,10 @@ std::optional<Intersection> Cylinder::find_intersection(const Ray &r) const
 
         double l = glm::l2Norm(r.direction() * t_3 - co);
 
-        if(t_3 > 0.0d && l * l <= _radius * _radius)
+        if(t_3 > 0.0d && l * l <= _radius * _radius &&
+            min_t > t_3)
         {
-            points.push_back(t_3);
+            min_t = t_3;
         }
     }
     else if (denominator < 1e-5d)
@@ -260,19 +263,10 @@ std::optional<Intersection> Cylinder::find_intersection(const Ray &r) const
 
         double l = glm::l2Norm(r.direction() * t_4 - co);
 
-        if (t_4 > 0.0d && l * l <= _radius * _radius)
+        if (t_4 > 0.0d && l * l <= _radius * _radius &&
+            min_t > t_4)
         {
-            points.push_back(t_4);
-        }
-    }
-
-    double min_t = std::numeric_limits<double>::infinity();
-
-    for(const auto &o : points)
-    {
-        if(min_t > o && o >= 0.0d)
-        {
-            min_t = o;
+            min_t = t_4;
         }
     }
 
