@@ -64,13 +64,26 @@ std::unique_ptr<Scene> SceneLoader::scene_2()
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(0, -1e5 - 10, -20), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(0, 1e5 + 20, -20), 1e5, &_ivory)));
+        new Sphere(glm::dvec3(0, 1e5 + 14, -20), 1e5, &_ivory)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
         new Sphere(glm::dvec3(8, -2, -24), 8, &_mirror)));
     scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(-10, -5, -25), 5, &_glass)));
-    scene->objects().push_back(std::unique_ptr<Sphere>(
-        new Sphere(glm::dvec3(0, 619.96, -20), 600, &_rubber)));
+        new Sphere(glm::dvec3(-10, -5, -18), 5, &_clean)));
+
+    std::vector<Vertex> v;
+    std::vector<Triangle> t;
+
+    v.push_back(Vertex { .position = glm::vec3(-15, 13, -25),
+        .normal = glm::vec3(0, -1, 0) });
+    v.push_back(Vertex { .position = glm::vec3(15, 13, -25),
+        .normal = glm::vec3(0, -1, 0) });
+    v.push_back(Vertex { .position = glm::vec3(0, 13, -15),
+        .normal = glm::vec3(0, -1, 0) });
+
+    t.push_back(Triangle { .a = 0, .b = 1, .c = 2 });
+
+    scene->objects().push_back(std::unique_ptr<Mesh>(
+        new Mesh(v, t, &_rubber)));
 
     scene->point_lights().push_back(std::unique_ptr<PointLight>(
         new PointLight(glm::dvec3(0, 5, -20), 1.5d)));

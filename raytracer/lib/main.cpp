@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
     opts.fov = std::acos(-1.0d) / 2.0d;
     opts.max_recursion = 5;
     opts.supersampling_rays = 2;
-    opts.paths_per_pixel = 0;
+    opts.paths_per_pixel = 100;
 
     Renderer test;
     SceneLoader loader;
 
-    Image img = test.render(*loader.load_scene(1), opts);
+    Image img = test.render(*loader.load_scene(2), opts);
     img.save_bmp("test.bmp");
 
     return 0;
