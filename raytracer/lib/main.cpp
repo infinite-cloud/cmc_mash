@@ -91,11 +91,7 @@ int main(int argc, char *argv[])
         Timer timer;
 
         scene = std::move(loader.load_scene(options.scene_num));
-
-        if (!scene)
-        {
-            std::cout << ((scene) ? "Done. " : "Failed. ") << "Elapsed time: ";
-        }
+        std::cout << ((scene) ? "Done. " : "Failed. ") << "Elapsed time: ";
     }
 
     std::cout << "." << std::endl;
