@@ -100,7 +100,10 @@ std::unique_ptr<Scene> SceneLoader::scene_3()
     auto scene = std::unique_ptr<Scene>(new Scene());
     Model model;
 
-    model.load("bunny.obj", &_glass);
+    if (!model.load("../bunny.obj", &_glass))
+    {
+        return nullptr;
+    }
 
     scene->objects().push_back(std::move(model.mesh()));
     scene->objects().push_back(std::unique_ptr<Plane>(

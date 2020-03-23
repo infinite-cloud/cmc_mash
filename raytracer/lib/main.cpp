@@ -52,7 +52,9 @@ int main(int argc, char *argv[])
     options.supersampling_rays = 2;
     options.paths_per_pixel = 0;
 
+#ifdef _OPENMP
     omp_set_num_threads(options.num_threads);
+#endif
 
     Renderer renderer;
     SceneLoader loader;
@@ -90,11 +92,20 @@ int main(int argc, char *argv[])
 
         scene = std::move(loader.load_scene(options.scene_num));
 
-        std::cout << "Done. Elapsed time: ";
+        if (!scene)
+        {
+            std::cout << ((scene) ? "Done. " : "Failed. ") << "Elapsed time: ";
+        }
     }
 
     std::cout << "." << std::endl;
     std::cout << std::endl;
+
+    if (!scene)
+    {
+        std::cout << "Exiting..." << std::endl;
+        exit(0);
+    }
 
     {
         std::cout << "Rendering..." << std::endl;
