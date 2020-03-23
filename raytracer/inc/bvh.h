@@ -124,7 +124,7 @@ inline uint64_t morton(uint32_t x, uint32_t y, uint32_t z)
     return split_by_3(x) | (split_by_3(y) << 1) | (split_by_3(z) << 2);
 }
 
-inline uint64_t morton(const glm::vec3& pos)
+inline uint64_t morton(const glm::vec3 &pos)
 {
     return morton
     (
