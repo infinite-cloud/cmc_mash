@@ -17,10 +17,28 @@ public:
     ~Timer()
     {
         const auto finish = clock_t::now();
-        const auto us = std::chrono::duration_cast<microseconds> 
+        auto us = std::chrono::duration_cast<microseconds> 
             (finish - _start).count();
 
-		std::cout << us << " microseconds";
+        if (us >= static_cast<int>(10e5 * 60 * 60))
+        {
+            std::cout << us / static_cast<int>(10e5 * 60 * 60) << " hour(s) ";
+            us %= static_cast<int>(10e5 * 60 * 60);
+        }
+
+        if (us >= static_cast<int>(10e5 * 60))
+        {
+            std::cout << us / static_cast<int>(10e5 * 60) << " minute(s) ";
+            us %= static_cast<int>(10e5 * 60);
+        }
+
+        if (us >= static_cast<int>(10e5))
+        {
+            std::cout << us / static_cast<int>(10e5) << " second(s) ";
+            us %= static_cast<int>(10e5);
+        }
+
+		std::cout << us << " microsecond(s)";
 	}
 };
 

@@ -4,6 +4,7 @@ CFLAGS = -I$(IDIR) -Wall -std=c++17 -pthread -O3 -fopenmp
 
 ODIR = bin
 LDIR = lib
+BDIR = build
 
 _DEPS = image.h ray.h scene.h timer.h
 _DEPS += renderer.h object.h light.h
@@ -19,7 +20,8 @@ OBJ = $(patsubst %, $(ODIR)/%, $(_OBJ))
 $(ODIR)/%.o: $(LDIR)/%.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-test: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+rt: $(OBJ)
+	$(CC) -o $(BDIR)/$@ $^ $(CFLAGS)
 
 $(shell mkdir -p $(ODIR))
+$(shell mkdir -p $(BDIR))
