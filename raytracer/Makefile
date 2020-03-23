@@ -2,7 +2,7 @@ IDIR = inc
 CC = g++
 CFLAGS = -I$(IDIR) -Wall -std=c++17 -pthread -O3 -fopenmp
 
-ODIR = obj
+ODIR = bin
 LDIR = lib
 
 _DEPS = image.h ray.h scene.h timer.h
