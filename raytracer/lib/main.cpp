@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         default:
             std::cout << "Scene " << std::to_string(options.scene_num) <<
                 " does not exist. Exiting..." << std::endl;
-            exit(1);
+            exit(0);
             break;
     }
 
