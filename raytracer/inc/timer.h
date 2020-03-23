@@ -19,26 +19,26 @@ public:
         const auto finish = clock_t::now();
         auto us = std::chrono::duration_cast<microseconds> 
             (finish - _start).count();
+        long multiplier = 1e6 * 60 * 60;
 
-        if (us >= static_cast<int>(10e5 * 60 * 60))
+        if (us >= multiplier)
         {
-            std::cout << us / static_cast<int>(10e5 * 60 * 60) << " hour(s) ";
-            us %= static_cast<int>(10e5 * 60 * 60);
+            std::cout << us / multiplier << " hour(s) ";
+            us %= multiplier;
         }
 
-        if (us >= static_cast<int>(10e5 * 60))
+        multiplier /= 60;
+
+        if (us >= multiplier)
         {
-            std::cout << us / static_cast<int>(10e5 * 60) << " minute(s) ";
-            us %= static_cast<int>(10e5 * 60);
+            std::cout << us / multiplier << " minute(s) ";
+            us %= multiplier;
         }
 
-        if (us >= static_cast<int>(10e5))
-        {
-            std::cout << us / static_cast<int>(10e5) << " second(s) ";
-            us %= static_cast<int>(10e5);
-        }
+        multiplier /= 60;
 
-		std::cout << us << " microsecond(s)";
+        std::cout << us / multiplier << ".";
+        std::cout << us % multiplier << " second(s)";
 	}
 };
 
