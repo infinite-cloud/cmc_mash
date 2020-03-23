@@ -39,7 +39,7 @@ public:
 
         std::cout << us / multiplier << ".";
         std::cout << us % multiplier << " second(s)";
-	}
+    }
 };
 
 #endif // TIMER_H

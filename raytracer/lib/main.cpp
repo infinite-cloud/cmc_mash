@@ -19,13 +19,13 @@ int main(int argc, char *argv[])
 {
     std::unordered_map<std::string, std::string> arg_list;
 
-    for(int i = 0; i < argc; ++i)
+    for (int i = 0; i < argc; ++i)
     {
         std::string key(argv[i]);
 
-        if(key.size() > 0 && key[0] == '-')
+        if (key.size() > 0 && key[0] == '-')
         {
-            if(i != argc - 1)
+            if (i != argc - 1)
             {
                 arg_list[key] = argv[++i];
             }
