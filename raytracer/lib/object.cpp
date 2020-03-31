@@ -180,7 +180,7 @@ void Mesh::regen_bvh(size_t delta)
             return ts;
         })(),
         delta,
-        [this](const auto& t)
+        [this](const auto &t)
         {
             return calculate_box(t);
         }
